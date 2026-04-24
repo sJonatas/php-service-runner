@@ -18,17 +18,33 @@ composer require sjonatas/service-runner
 
 ## Core Concepts
 
+### PayloadData (DTO)
+
+Input data for a service is defined as a readonly DTO implementing the `PayloadData` marker interface. Public properties are extracted automatically -- no boilerplate needed.
+
+```php
+use ServiceRunner\Middleware\PayloadData;
+
+readonly class CreateUserData implements PayloadData
+{
+    public function __construct(
+        public string $name,
+        public string $email,
+    ) {}
+}
+```
+
 ### Payload
 
-An immutable data carrier that flows through the middleware pipeline. Every middleware receives the payload, can read or transform it, and passes it forward.
+An immutable data carrier that flows through the middleware pipeline. It is constructed from a `PayloadData` DTO.
 
 ```php
 use ServiceRunner\Middleware\ServicePayload;
 
-$payload = new ServicePayload([
-    'name'  => 'John Doe',
-    'email' => 'john@example.com',
-]);
+$payload = new ServicePayload(new CreateUserData(
+    name: 'John Doe',
+    email: 'john@example.com',
+));
 
 // Read attributes
 $payload->getAttribute('name');               // "John Doe"
@@ -176,10 +192,10 @@ $runner = new Runner([
 
 $service = new CreateUser([], $runner);
 
-$result = $service->run(new ServicePayload([
-    'name'  => 'John Doe',
-    'email' => 'john@example.com',
-]));
+$result = $service->run(new ServicePayload(new CreateUserData(
+    name: 'John Doe',
+    email: 'john@example.com',
+)));
 ```
 
 #### With a PSR-11 container (e.g. PHP-DI)
@@ -201,10 +217,10 @@ $runner = new Runner([
 
 $service = new CreateUser([], $runner);
 
-$result = $service->run(new ServicePayload([
-    'name'  => 'John Doe',
-    'email' => 'john@example.com',
-]));
+$result = $service->run(new ServicePayload(new CreateUserData(
+    name: 'John Doe',
+    email: 'john@example.com',
+)));
 ```
 
 #### Using ServiceConfig to centralize definitions
@@ -276,10 +292,10 @@ use ServiceRunner\Middleware\ServicePayload;
 
 $service = app(CreateUser::class);
 
-$result = $service->run(new ServicePayload([
-    'name'  => 'John Doe',
-    'email' => 'john@example.com',
-]));
+$result = $service->run(new ServicePayload(new CreateUserData(
+    name: 'John Doe',
+    email: 'john@example.com',
+)));
 ```
 
 The provider automatically:
@@ -340,10 +356,10 @@ use ServiceRunner\Middleware\ServicePayload;
 // In a controller action
 public function add(CreateUser $createUser)
 {
-    $result = $createUser->run(new ServicePayload([
-        'name'  => $this->request->getData('name'),
-        'email' => $this->request->getData('email'),
-    ]));
+    $result = $createUser->run(new ServicePayload(new CreateUserData(
+        name: $this->request->getData('name'),
+        email: $this->request->getData('email'),
+    )));
 }
 ```
 
@@ -399,6 +415,7 @@ src/
 │   ├── Resolver.php                    # PSR-11 container resolver
 │   ├── BasicResolver.php              # No-DI resolver
 │   ├── Payload.php                    # Payload contract
+│   ├── PayloadData.php               # DTO contract (input data)
 │   └── ServicePayload.php            # Default Payload implementation
 └── Framework/
     ├── Laravel/

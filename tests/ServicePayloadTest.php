@@ -6,14 +6,23 @@ namespace ServiceRunner\Tests;
 
 use PHPUnit\Framework\TestCase;
 use ServiceRunner\Middleware\ServicePayload;
+use ServiceRunner\Tests\Stub\SimpleData;
+use ServiceRunner\Tests\Stub\TagsData;
 
 class ServicePayloadTest extends TestCase
 {
-    public function testConstructorSetsAttributes(): void
+    public function testConstructorSetsAttributesFromDto(): void
     {
-        $payload = new ServicePayload(['key' => 'value']);
+        $payload = new ServicePayload(new SimpleData(key: 'value'));
 
         $this->assertSame('value', $payload->getAttribute('key'));
+    }
+
+    public function testConstructorWithoutArguments(): void
+    {
+        $payload = new ServicePayload();
+
+        $this->assertSame([], $payload->getAttributes());
     }
 
     public function testGetAttributeReturnsDefault(): void
@@ -26,15 +35,14 @@ class ServicePayloadTest extends TestCase
 
     public function testGetAttributesReturnsAll(): void
     {
-        $attrs = ['a' => 1, 'b' => 2];
-        $payload = new ServicePayload($attrs);
+        $payload = new ServicePayload(new SimpleData(key: 'k', name: 'n', email: 'e'));
 
-        $this->assertSame($attrs, $payload->getAttributes());
+        $this->assertSame(['key' => 'k', 'name' => 'n', 'email' => 'e'], $payload->getAttributes());
     }
 
     public function testWithAttributeIsImmutable(): void
     {
-        $payload = new ServicePayload(['key' => 'old']);
+        $payload = new ServicePayload(new SimpleData(key: 'old'));
         $new = $payload->withAttribute('key', 'new');
 
         $this->assertNotSame($payload, $new);
@@ -44,25 +52,26 @@ class ServicePayloadTest extends TestCase
 
     public function testWithAttributesReplacesAll(): void
     {
-        $payload = new ServicePayload(['a' => 1]);
+        $payload = new ServicePayload(new SimpleData(key: 'a'));
         $new = $payload->withAttributes(['b' => 2]);
 
-        $this->assertSame(['a' => 1], $payload->getAttributes());
+        $this->assertSame('a', $payload->getAttribute('key'));
         $this->assertSame(['b' => 2], $new->getAttributes());
     }
 
     public function testWithoutAttributeRemovesKey(): void
     {
-        $payload = new ServicePayload(['a' => 1, 'b' => 2]);
-        $new = $payload->withoutAttribute('a');
+        $payload = new ServicePayload(new SimpleData(key: 'k', name: 'n'));
+        $new = $payload->withoutAttribute('key');
 
-        $this->assertSame(['a' => 1, 'b' => 2], $payload->getAttributes());
-        $this->assertSame(['b' => 2], $new->getAttributes());
+        $this->assertSame('k', $payload->getAttribute('key'));
+        $this->assertNull($new->getAttribute('key'));
+        $this->assertSame('n', $new->getAttribute('name'));
     }
 
     public function testMergeAttributeMergesArrays(): void
     {
-        $payload = new ServicePayload(['tags' => ['php']]);
+        $payload = new ServicePayload(new TagsData(tags: ['php']));
         $new = $payload->mergeAttribute('tags', ['laravel']);
 
         $this->assertSame(['php'], $payload->getAttribute('tags'));
@@ -71,7 +80,7 @@ class ServicePayloadTest extends TestCase
 
     public function testMergeAttributeReplacesNonArray(): void
     {
-        $payload = new ServicePayload(['tags' => 'not-array']);
+        $payload = (new ServicePayload())->withAttribute('tags', 'not-array');
         $new = $payload->mergeAttribute('tags', ['laravel']);
 
         $this->assertSame(['laravel'], $new->getAttribute('tags'));

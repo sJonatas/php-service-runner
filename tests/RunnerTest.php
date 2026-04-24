@@ -10,6 +10,7 @@ use ServiceRunner\Middleware\Middleware;
 use ServiceRunner\Middleware\Payload;
 use ServiceRunner\Middleware\Runner;
 use ServiceRunner\Middleware\ServicePayload;
+use ServiceRunner\Tests\Stub\SimpleData;
 
 class RunnerTest extends TestCase
 {
@@ -52,7 +53,7 @@ class RunnerTest extends TestCase
         $resolver = new BasicResolver();
         $runner = new Runner([], $resolver);
 
-        $payload = new ServicePayload(['key' => 'value']);
+        $payload = new ServicePayload(new SimpleData(key: 'value'));
         $result = $runner($payload);
 
         $this->assertSame('value', $result->getAttribute('key'));

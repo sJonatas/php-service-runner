@@ -7,19 +7,11 @@ namespace ServiceRunner\Middleware;
 
 class ServicePayload implements Payload
 {
-    /**
-     * @var array|null
-     */
-    protected $attributes;
+    protected array $attributes;
 
-    /**
-     * Payload constructor.
-     *
-     * @param array|null $attributes
-     */
-    public function __construct(?array $attributes = null)
+    public function __construct(?PayloadData $data = null)
     {
-        $this->attributes = $attributes ?? [];
+        $this->attributes = $data ? get_object_vars($data) : [];
     }
 
     /**

@@ -11,6 +11,8 @@ use ServiceRunner\Middleware\Payload;
 use ServiceRunner\Middleware\Runner;
 use ServiceRunner\Middleware\ServicePayload;
 use ServiceRunner\Service;
+use ServiceRunner\Tests\Stub\OptionsData;
+use ServiceRunner\Tests\Stub\SimpleData;
 
 class ServiceTest extends TestCase
 {
@@ -28,7 +30,7 @@ class ServiceTest extends TestCase
 
         $service = new class([], $runner) extends Service {};
 
-        $result = $service->run(new ServicePayload(['name' => 'test']));
+        $result = $service->run(new ServicePayload(new SimpleData(name: 'test')));
 
         $this->assertNotNull($result);
         $this->assertTrue($result->getAttribute('processed'));
@@ -93,9 +95,7 @@ class ServiceTest extends TestCase
 
         $service = new class(['a' => 1], $runner) extends Service {};
 
-        $result = $service->run(new ServicePayload([
-            'options' => ['b' => 2],
-        ]));
+        $result = $service->run(new ServicePayload(new OptionsData(options: ['b' => 2])));
 
         $this->assertNotNull($result);
         $options = $result->getAttribute('options');
