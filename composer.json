@@ -1,0 +1,42 @@
+{
+    "name": "sjonatas/service-runner",
+    "description": "A middleware pipeline runner for application services, composing use cases from ordered steps over an immutable payload.",
+    "type": "library",
+    "keywords": [
+        "service",
+        "pipeline",
+        "middleware",
+        "runner",
+        "ddd",
+        "use-case",
+        "payload",
+        "laravel"
+    ],
+    "license": "MIT",
+    "require": {
+        "php": "^8.4",
+        "illuminate/container": "^11.0|^12.0",
+        "illuminate/support": "^11.0|^12.0"
+    },
+    "suggest": {
+        "laravel/framework": "Required for full Laravel integration (^11.0|^12.0)"
+    },
+    "require-dev": {
+        "phpunit/phpunit": "^10.5|^11.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "ServiceRunner\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "ServiceRunner\\Tests\\": "tests/"
+        }
+    },
+    "config": {
+        "sort-packages": true
+    },
+    "minimum-stability": "stable",
+    "prefer-stable": true
+}
