@@ -4,10 +4,8 @@ declare(strict_types=1);
 
 namespace ServiceRunner\Middleware;
 
-use Illuminate\Support\Arr;
-use JsonSerializable;
 
-class ServicePayload implements Payload, JsonSerializable
+class ServicePayload implements Payload
 {
     /**
      * @var array|null
@@ -19,7 +17,7 @@ class ServicePayload implements Payload, JsonSerializable
      *
      * @param array|null $attributes
      */
-    public function __construct(array $attributes = null)
+    public function __construct(?array $attributes = null)
     {
         $this->attributes = $attributes ?? [];
     }
@@ -82,7 +80,7 @@ class ServicePayload implements Payload, JsonSerializable
         }
 
         $cloned = clone $this;
-        $cloned->attributes[$name] = array_merge($attribute, Arr::wrap($value));
+        $cloned->attributes[$name] = array_merge($attribute, $value);
 
         return $cloned;
     }

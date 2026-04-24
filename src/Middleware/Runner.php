@@ -51,7 +51,7 @@ class Runner implements MiddlewareRunner
     }
 
     /**
-     * Converts a queue entry to a callable, using the resolver if present.
+     * Converts a queue entry to a callable, using the resolver.
      *
      * @param mixed|callable|Middleware $entry the queue entry.
      *
@@ -63,9 +63,6 @@ class Runner implements MiddlewareRunner
             return static function (Payload $payload, callable $next) {
                 return $payload;
             };
-        }
-        if (! $this->resolver) {
-            return $entry;
         }
 
         return call_user_func($this->resolver, $entry);

@@ -4,28 +4,23 @@ declare(strict_types=1);
 
 namespace ServiceRunner\Middleware;
 
-use Illuminate\Container\Container;
-use Illuminate\Contracts\Container\BindingResolutionException;
+use Psr\Container\ContainerInterface;
+use Psr\Container\ContainerExceptionInterface;
+use Psr\Container\NotFoundExceptionInterface;
 
 class Resolver implements MiddlewareResolver
 {
-    /**
-     * @var Container
-     */
-    private $container;
+    private ContainerInterface $container;
 
-    /**
-     * Resolver constructor.
-     * @param Container $container
-     */
-    public function __construct(Container $container)
+    public function __construct(ContainerInterface $container)
     {
         $this->container = $container;
     }
 
     /**
      * @param mixed $entry
-     * @throws BindingResolutionException
+     * @throws ContainerExceptionInterface
+     * @throws NotFoundExceptionInterface
      * @return Middleware
      */
     public function __invoke($entry): Middleware
@@ -34,6 +29,6 @@ class Resolver implements MiddlewareResolver
             return $entry;
         }
 
-        return $this->container->make($entry);
+        return $this->container->get($entry);
     }
 }

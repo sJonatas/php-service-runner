@@ -1,0 +1,6 @@
+services:
+  tests:
+    build: .
+    volumes:
+      - .:/app
+    entrypoint: ["sh", "-c", "composer install --quiet && vendor/bin/phpunit"]
