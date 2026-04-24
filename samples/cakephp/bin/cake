@@ -1,0 +1,12 @@
+#!/usr/bin/env php
+<?php
+
+require dirname(__DIR__) . '/config/paths.php';
+
+require ROOT . DS . 'config' . DS . 'bootstrap.php';
+
+use App\Application;
+use Cake\Console\CommandRunner;
+
+$runner = new CommandRunner(new Application(CONFIG));
+exit($runner->run($argv));

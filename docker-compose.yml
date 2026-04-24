@@ -4,3 +4,27 @@ services:
     volumes:
       - .:/app
     entrypoint: ["sh", "-c", "composer install --quiet && vendor/bin/phpunit"]
+
+  sample-vanilla:
+    build: samples/vanilla-php
+    ports:
+      - "8080:8080"
+    volumes:
+      - .:/service-runner
+    entrypoint: ["sh", "-c", "composer install --quiet && php -S 0.0.0.0:8080 -t public"]
+
+  sample-laravel:
+    build: samples/laravel
+    ports:
+      - "8081:8081"
+    volumes:
+      - .:/service-runner
+    entrypoint: ["sh", "-c", "composer install --quiet && php artisan key:generate --force && touch database/database.sqlite && php artisan migrate --force && php artisan serve --host=0.0.0.0 --port=8081"]
+
+  sample-cakephp:
+    build: samples/cakephp
+    ports:
+      - "8082:8082"
+    volumes:
+      - .:/service-runner
+    entrypoint: ["sh", "-c", "composer install --quiet && touch database.sqlite && sqlite3 database.sqlite 'CREATE TABLE IF NOT EXISTS users (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT NOT NULL, email TEXT NOT NULL UNIQUE, password TEXT NOT NULL)' && php -S 0.0.0.0:8082 -t webroot"]

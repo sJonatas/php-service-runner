@@ -28,7 +28,7 @@ class ServiceRunnerProvider extends ServiceProvider
             $middlewares = $definition['middlewares'] ?? [];
             $options = $definition['options'] ?? [];
 
-            $this->app->bind($service, function ($app) use ($middlewares, $options) {
+            $this->app->bind($service, function ($app) use ($service, $middlewares, $options) {
                 $resolver = $app->make(MiddlewareResolver::class);
                 $runner = new Runner($middlewares, $resolver);
 

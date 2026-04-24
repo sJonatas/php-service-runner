@@ -1,0 +1,22 @@
+{
+    "name": "samples/cakephp",
+    "type": "project",
+    "require": {
+        "php": "^8.4",
+        "cakephp/cakephp": "^5.0",
+        "sjonatas/service-runner": "@dev"
+    },
+    "autoload": {
+        "psr-4": {
+            "App\\": "src/"
+        }
+    },
+    "repositories": [
+        {
+            "type": "path",
+            "url": "/service-runner"
+        }
+    ],
+    "minimum-stability": "stable",
+    "prefer-stable": true
+}

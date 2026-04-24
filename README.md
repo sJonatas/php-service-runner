@@ -7,7 +7,7 @@ A middleware pipeline runner for PHP application services. Compose use cases fro
 ## Requirements
 
 - PHP 8.4+
-- Docker (for running tests)
+- Docker (for running tests and sample apps)
 - PSR-11 Container (optional, for dependency injection)
 
 ## Installation
@@ -365,21 +365,34 @@ public function add(CreateUser $createUser)
 
 ## Architecture
 
-```
-┌─────────────────────────────────────────────────────────┐
-│  Service::run(Payload)                                  │
-│                                                         │
-│  ┌──────────┐   ┌──────────┐   ┌──────────┐            │
-│  │Middleware │──▶│Middleware │──▶│Middleware │──▶ Result  │
-│  │   Step 1  │   │   Step 2  │   │   Step 3  │            │
-│  └──────────┘   └──────────┘   └──────────┘            │
-│       ▲                                                 │
-│       │                                                 │
-│   Resolver (BasicResolver or PSR-11 Resolver)           │
-└─────────────────────────────────────────────────────────┘
+```mermaid
+flowchart TD
+    A["Service::run(Payload)"] --> B{shouldProcess?}
+    B -- "false → return null" --> Z["⛔ Skipped"]
+    B -- "true" --> C["Resolver resolves middleware classes"]
+    C --> D["Middleware Step 1"]
+    D --> E{calls $next?}
+    E -- "no → short-circuit" --> R["⏎ Return Payload"]
+    E -- "yes" --> F["Middleware Step 2"]
+    F --> G{calls $next?}
+    G -- "no → short-circuit" --> R
+    G -- "yes" --> H["Middleware Step N"]
+    H --> I{calls $next?}
+    I -- "no → short-circuit" --> R
+    I -- "yes" --> J["✅ Result Payload"]
+
+    style Z fill:#fee,stroke:#c00
+    style R fill:#fef,stroke:#909
+    style J fill:#efe,stroke:#090
 ```
 
-The pipeline executes each middleware in order. Each step can transform the payload, short-circuit, or delegate to the next step via `$next($payload)`. The resolver converts class names into middleware instances, either by direct instantiation or through a DI container.
+Each middleware receives the payload and a `$next` callable. It can:
+
+- **Transform** the payload and pass it forward via `$next($payload)`
+- **Short-circuit** the pipeline by returning without calling `$next`
+- **Post-process** the result returned from `$next`
+
+The `Resolver` converts class names in the queue into middleware instances — either by direct instantiation (`BasicResolver`) or through a PSR-11 container (`Resolver`).
 
 ## Testing
 
@@ -401,6 +414,50 @@ You can pass additional PHPUnit arguments:
 ./run-tests.sh --no-coverage
 ```
 
+## Sample Apps
+
+Three runnable sample applications are included, each demonstrating the library in a different environment. All use SQLite for persistence and run in Docker containers.
+
+| Sample | Framework | URL | Port |
+|---|---|---|---|
+| Vanilla PHP | Built-in server | [localhost:8080](http://localhost:8080) | 8080 |
+| Laravel | Artisan serve | [localhost:8081](http://localhost:8081) | 8081 |
+| CakePHP 5 | Cake server | [localhost:8082](http://localhost:8082) | 8082 |
+
+### Running the samples
+
+Start all three samples at once:
+
+```bash
+docker compose up sample-vanilla sample-laravel sample-cakephp
+```
+
+Or start a single sample:
+
+```bash
+docker compose up sample-vanilla
+```
+
+### Trying the API
+
+Each sample exposes the same endpoints:
+
+```bash
+# Create a user
+curl -X POST http://localhost:8080/users \
+  -H "Content-Type: application/json" \
+  -d '{"name": "John Doe", "email": "john@example.com", "password": "secret123"}'
+
+# List users
+curl http://localhost:8080/users
+```
+
+Replace port `8080` with `8081` (Laravel) or `8082` (CakePHP) to test the other samples. Laravel routes are prefixed with `/api`, so use `http://localhost:8081/api/users`.
+
+### Sample structure
+
+Each sample lives in `samples/<framework>/` with its own `Dockerfile`, `composer.json`, and application code. The library is mounted as a Composer path repository, so any changes to the library source are reflected immediately.
+
 ## Project Structure
 
 ```
@@ -417,11 +474,15 @@ src/
 │   ├── Payload.php                    # Payload contract
 │   ├── PayloadData.php               # DTO contract (input data)
 │   └── ServicePayload.php            # Default Payload implementation
-└── Framework/
-    ├── Laravel/
-    │   └── ServiceRunnerProvider.php   # Laravel service provider
-    └── CakePHP/
-        └── ServiceRunnerProvider.php   # CakePHP 5 service provider
+├── Framework/
+│   ├── Laravel/
+│   │   └── ServiceRunnerProvider.php   # Laravel service provider
+│   └── CakePHP/
+│       └── ServiceRunnerProvider.php   # CakePHP 5 service provider
+samples/
+├── vanilla-php/                        # Vanilla PHP sample (port 8080)
+├── laravel/                            # Laravel sample (port 8081)
+└── cakephp/                            # CakePHP 5 sample (port 8082)
 ```
 
 ## License

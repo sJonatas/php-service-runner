@@ -1,0 +1,20 @@
+{
+    "name": "samples/vanilla-php",
+    "type": "project",
+    "require": {
+        "php": "^8.4",
+        "sjonatas/service-runner": "@dev"
+    },
+    "autoload": {
+        "psr-4": {
+            "Samples\\VanillaPhp\\": "src/"
+        }
+    },
+    "repositories": [
+        {
+            "type": "path",
+            "url": "/service-runner"
+        }
+    ],
+    "minimum-stability": "stable"
+}
